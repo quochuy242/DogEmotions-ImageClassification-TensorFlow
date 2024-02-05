@@ -4,6 +4,7 @@ import seaborn as sns
 import os
 
 plt.style.use('ggplot')
+emotions = ['angry', 'happy', 'relaxed', 'sad']
 
 def show_image(paths: list, rows: int, cols: int, figsize: tuple = (15, 15)) -> None:
     """
@@ -14,18 +15,11 @@ def show_image(paths: list, rows: int, cols: int, figsize: tuple = (15, 15)) -> 
     :param figsize: size of figure, default is (15, 15)
     :return: a gird have rows * cols images
     """
-    for i in range(1, rows + cols):
-        # plt.subplot(rows, cols, i)
-        cv2.imshow('image', cv2.imread(paths[i-1]))
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    # plt.show()
+    global emotions
+    for i in range(rows + cols):
+        plt.subplot(rows, cols, i+1)
+        plt.grid(False)
+        plt.imshow(paths[i])
+        plt.xlabel(emotions)
+    plt.show()
 
-os.chdir('D:\Python Project\DogEmotions-ImageClassification-TensorFlow')
-current_path = os.getcwd()
-data_path = os.path.join(current_path, 'Dataset')
-emotions = os.listdir(data_path)
-
-angry_images = os.listdir(os.path.join(data_path, emotions[0]))
-
-show_image(angry_path, 1, 2)

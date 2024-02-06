@@ -2,6 +2,10 @@ import cv2
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import tensorflow as tf
+
+Dataset = tf.data.Dataset
+AUTOTUNE = tf.data.AUTOTUNE
 
 plt.style.use('ggplot')
 emotions = ['angry', 'happy', 'relaxed', 'sad']
@@ -31,9 +35,3 @@ def show_image(paths: list, rows: int, cols: int, figsize: tuple = (10, 10)) -> 
             if emo in paths[i]:
                 plt.title(emo)
     plt.show()
-
-
-list_image = [os.path.join(data_path, 'angry', 'angry' + str(i) + '.jpg') for i in range(25)]
-print(list_image)
-
-show_image(list_image, rows=5, cols=5)

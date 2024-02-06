@@ -1,6 +1,6 @@
 import os
 
-os.chdir('D:/Python Project/DogEmotions-ImageClassification-TensorFlow')
+os.chdir('/')
 current_path = os.getcwd()
 data_path = os.path.join(current_path, 'Dataset')
 emotions = os.listdir(data_path)

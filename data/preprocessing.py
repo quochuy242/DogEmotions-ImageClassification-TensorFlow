@@ -3,6 +3,8 @@ import os
 
 Dataset = tf.data.Dataset
 AUTOTUNE = tf.data.AUTOTUNE
+
+
 def load_data(data_path: str) -> Dataset:
     """
     Loading dataset from input path
@@ -23,8 +25,17 @@ def load_data(data_path: str) -> Dataset:
     data = angry_with_label.concatenate(happy_with_label).concatenate(relaxed_with_label).concatenate(sad_with_label)
     return data
 
-def train_test_split(data: Dataset):
-    pass
+
+def train_val_split(data: Dataset, train_rate: float = 0.8):
+    train_ds = data.take(int(len(data) * train_rate))
+    val_ds = data.skip(int(len(data) * train_rate)).take(int(len(data) * (1 - train_rate)))
+
+    train_ds = train_ds[..., tf.newaxis].astype('float32')
+    val_ds = val_ds[..., tf.newaxis].astype('float32')
+
+    return train_ds, val_ds
+
+
 def pipeline(data: Dataset):
     """
     Building pipeline for data. Help increasing efficiency of model
@@ -32,7 +43,7 @@ def pipeline(data: Dataset):
     :return: data after passing pipeline and length of new data
     """
     data = data.cache()
-    data = data.shuffle(buffer_size=10000) # buffer_size should be more length of data
+    data = data.shuffle(buffer_size=10000)  # buffer_size should be more length of data
     data = data.batch(128)
     data = data.prefetch(AUTOTUNE)
 

@@ -1,8 +1,11 @@
 import tensorflow as tf
 import os
+import cv2
+import numpy as np
 
 Dataset = tf.data.Dataset
 AUTOTUNE = tf.data.AUTOTUNE
+emotions = ['angry', 'happy', 'relaxed', 'sad']
 
 
 def load_data(data_path: str) -> Dataset:
@@ -18,9 +21,9 @@ def load_data(data_path: str) -> Dataset:
     sad_images = Dataset.list_files(os.path.join(data_path, emotions[3]) + '/*.jpg')
 
     angry_with_label = Dataset.zip((angry_images, Dataset.from_tensor_slices(tf.ones(len(angry_images)))))
-    happy_with_label = Dataset.zip((happy_images, Dataset.from_tensor_slices(2 * tf.ones(len(angry_images)))))
-    relaxed_with_label = Dataset.zip((relaxed_images, Dataset.from_tensor_slices(3 * tf.ones(len(angry_images)))))
-    sad_with_label = Dataset.zip((sad_images, Dataset.from_tensor_slices(4 * tf.ones(len(angry_images)))))
+    happy_with_label = Dataset.zip((happy_images, Dataset.from_tensor_slices(2 * tf.ones(len(happy_images)))))
+    relaxed_with_label = Dataset.zip((relaxed_images, Dataset.from_tensor_slices(3 * tf.ones(len(relaxed_images)))))
+    sad_with_label = Dataset.zip((sad_images, Dataset.from_tensor_slices(4 * tf.ones(len(sad_images)))))
 
     data = angry_with_label.concatenate(happy_with_label).concatenate(relaxed_with_label).concatenate(sad_with_label)
     return data
@@ -28,23 +31,32 @@ def load_data(data_path: str) -> Dataset:
 
 def train_val_split(data: Dataset, train_rate: float = 0.8):
     train_ds = data.take(int(len(data) * train_rate))
-    val_ds = data.skip(int(len(data) * train_rate)).take(int(len(data) * (1 - train_rate)))
-
-    train_ds = train_ds[..., tf.newaxis].astype('float32')
-    val_ds = val_ds[..., tf.newaxis].astype('float32')
-
+    val_ds = data.skip(int(len(data) * train_rate)).take(len(data) - len(train_ds))
     return train_ds, val_ds
+
+
+def preprocess(file_path, label):
+    image = tf.io.read_file(file_path)
+    image = tf.image.decode_jpeg(image, channels=3)
+    image = tf.expand_dims(image, axis=-1)
+    return image, label
 
 
 def pipeline(data: Dataset):
     """
     Building pipeline for data. Help increasing efficiency of model
     :param data: tf.data.Dataset
-    :return: data after passing pipeline and length of new data
+    :return data, len(data): data after passing pipeline and length of new data
     """
+    # new_data = np.array()
+    # for i in data:
+    #     file_path, label = i.as_numpy_iterator().next()
+    #     image, label = preprocess(image, label)
+    #     new_data = np.concatenate((new_data, Dataset.zip(image, label)))
+    data = data.map(preprocess)
     data = data.cache()
-    data = data.shuffle(buffer_size=10000)  # buffer_size should be more length of data
-    data = data.batch(128)
+    data = data.shuffle(buffer_size=20000)  # buffer_size should be more length of data
+    data = data.batch(64)
     data = data.prefetch(AUTOTUNE)
 
     return data, len(data)

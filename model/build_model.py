@@ -22,7 +22,7 @@ def lr_time_based_decay(epoch, lr):
     return lr * 1 / (1 + decay * epoch)
 
 
-def build_model(resize_shape: tuple = (32, 32), initial_learning_rate: float = 0.0001):
+def create_model(resize_shape: tuple = (32, 32), initial_learning_rate: float = 0.0001):
     model = Sequential()
     model.add(Rescaling(1. / 255, input_shape=(384, 384, 3)))
     model.add(Resizing(resize_shape[0], resize_shape[1]))

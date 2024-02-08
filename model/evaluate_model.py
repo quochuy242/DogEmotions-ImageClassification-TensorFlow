@@ -23,3 +23,6 @@ def plot_metrics(history):
   plt.title('Traing and Validation; Accuracy, Loss and F1-Score')
   plt.legend(loc=0)
   plt.show()
+
+def evaluate(history):
+  pass

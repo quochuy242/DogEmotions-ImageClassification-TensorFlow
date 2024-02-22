@@ -43,7 +43,7 @@ def fit_model(model, train, val, epochs: int = 1000):
     history = model.fit(train,
                         validation_data=val,
                         epochs=epochs,
-                        verbose=50,
+                        verbose=1,
                         callbacks=[early_stopping, model_checkpoint,
                                    LearningRateScheduler(schedule=lr_time_based_decay, verbose=1)])
     load_model = tf.keras.models.load_model('best_model.h5')

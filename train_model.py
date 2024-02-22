@@ -1,11 +1,10 @@
 import os
-
 import data.preprocessing as preprocess
 import model.build_model as build
 import model.evaluate_model as evaluate
 
 
-def main():
+def preproces():
     current_path = os.getcwd()
     dataset_path = os.path.join(current_path, 'Dataset')
 
@@ -22,15 +21,14 @@ def main():
     print(f'Length of Training Dataset: {len(train)}')
     print(f'Length of Validation Dataset: {len(val)}')
 
+def training(train, val):
     # Building CNN model
     model = build.create_model()
     print(model.summary())
     best_model, history = build.fit_model(model, train=train, val=val)
 
+def evaluting(history):
     # Show the results of the training
     evaluate.plot_metrics(history)
-    return 0
 
 
-if __name__ == '__main__':
-    main()

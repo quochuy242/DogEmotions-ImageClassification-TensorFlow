@@ -33,7 +33,7 @@ def create_model(resize_shape: list = [32, 32], initial_learning_rate: float = 0
     model.add(Dense(128, activation='relu'))
     model.add(Dense(units=4, activation='softmax'))
 
-    model.compile(optimizer=Adam(learning_rate=initial_learning_rate), loss='sparse_categorical_crossentropy',
+    model.compile(optimizer=Adam(learning_rate=initial_learning_rate), loss='categorical_crossentropy',
                   metrics=[Recall(), Precision(), Accuracy()])
 
     return model

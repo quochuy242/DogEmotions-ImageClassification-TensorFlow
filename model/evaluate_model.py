@@ -1,5 +1,14 @@
 import matplotlib.pyplot as plt
+import tensorflow as tf
+import os
+import numpy as np
+import random
+import cv2
 
+os.chdir('D:\Python Project\DogEmotions-ImageClassification-TensorFlow')
+from data.preprocessing import load_data, preprocess
+
+emotions = ['angry', 'happy', 'relaxed', 'sad']
 
 def plot_metrics(history):
     acc = history.history['accuracy']
@@ -34,7 +43,18 @@ def plot_metrics(history):
     plt.title('Visualizing the results of the training model')
     plt.legend(loc=0)
     plt.show()
+    plt.savefig('plot_metrics.png')
 
+def testing(test_filepath):
+    test_ds = load_data(test_filepath)
+    random_test = random.choices(test_ds, k=12)
+    model = tf.keras.models.load_model('best_model.h5')
+    fig, axs = plt.subplots(3, 4, figsize=(10, 6))
 
-def evaluate(history):
+    # for r in range(3):
+    #     for c in range(4):
+    #         image = cv2.imread(random_test[i][])
+    #         y_pred = model.predict(image)[0]
     pass
+
+

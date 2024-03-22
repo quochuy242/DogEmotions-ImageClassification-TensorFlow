@@ -15,10 +15,10 @@ def load_data(data_path: str) -> Dataset:
     :return: data
     """
     global emotions
-    angry_images = Dataset.list_files(os.path.join(data_path, emotions[0]) + '/*.jpg')
-    happy_images = Dataset.list_files(os.path.join(data_path, emotions[1]) + '/*.jpg')
-    relaxed_images = Dataset.list_files(os.path.join(data_path, emotions[2]) + '/*.jpg')
-    sad_images = Dataset.list_files(os.path.join(data_path, emotions[3]) + '/*.jpg')
+    angry_images = Dataset.list_files(os.path.join(data_path, emotions[0]) + '\*.jpg')
+    happy_images = Dataset.list_files(os.path.join(data_path, emotions[1]) + '\*.jpg')
+    relaxed_images = Dataset.list_files(os.path.join(data_path, emotions[2]) + '\*.jpg')
+    sad_images = Dataset.list_files(os.path.join(data_path, emotions[3]) + '\*.jpg')
 
     angry_with_label = Dataset.zip(
         (angry_images, Dataset.from_tensor_slices([one_hot_encoding(emotions[0]) for _ in range(len(angry_images))])))

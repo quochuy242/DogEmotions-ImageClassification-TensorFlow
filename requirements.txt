@@ -4,3 +4,10 @@ tensorflow
 matplotlib
 seaborn
 opencv-python
+tqdm
+pathlib
+flask
+PyYAML
+notebook
+ipykernel
+loguru

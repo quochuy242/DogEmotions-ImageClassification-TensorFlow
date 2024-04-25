@@ -1,0 +1,2 @@
+data_ingestion:
+  url_download: https://www.kaggle.com/datasets/msambare/fer2013/download?datasetVersionNumber=1

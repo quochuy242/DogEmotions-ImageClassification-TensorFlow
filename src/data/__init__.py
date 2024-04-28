@@ -1,9 +1,116 @@
 import tensorflow as tf
 import os
 import logging as log
+import src
+import opendatasets as od
+import cv2
+import numpy as np
+import shutil
 
 from tensorflow import keras
-from tensorflow.data import Dataset
 from pathlib import Path
+from typing import Tuple
+from tensorflow import DatasetV2
 
-# Constants
+config = src.read_yaml(Path("./config/config.yaml"))
+
+data_ingestion_config = config["data_ingestion"]
+data_transformation_config = config["data_transformation"]
+
+
+class DataIngestion:
+    def __init__(
+        self,
+        config: dict,
+        download: bool = False,
+    ) -> None:
+        self.url_download = config["url_download"]
+        self.data_path = config["destination"]
+        self.download = download
+        return
+
+    def download_data(self):
+        if self.download:
+            log.info("Downloading data...")
+            od.download(self.url_download, self.dst_path)
+            self.download = False
+
+
+class DataTransformation:
+    def __init__(self, config: dict) -> None:
+        self.image_size = (
+            config["image_height"],
+            config["image_width"],
+            config["image_channels"],
+        )
+        self.num_classes = (config["num_classes"],)
+        self.train_ratio = (config["train_ratio"],)
+        self.test_ratio = (config["test_ratio"],)
+        self.val_ratio = (config["val_ratio"],)
+        self.batch_size = (config["batch_size"],)
+        self.save_path = config["save_path"]
+
+    def get_label(self, path: Path) -> str:
+        return path.parent.name
+
+    def one_hot_encode(self, label: str) -> int:
+        map_label = {
+            "angry": 0,
+            "fear": 1,
+            "happy": 2,
+            "neutral": 3,
+            "sad": 4,
+            "surprise": 5,
+        }
+        label = map_label[label]
+        return tf.one_hot(label, depth=6)
+
+    def get_image(self, path: Path) -> np.ndarray[float]:
+        img = cv2.imread(str(path))
+        if self.image_size[-1] == 1:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = cv2.resize(
+            img, dsize=self.image_size[:-1], interpolation=cv2.INTER_LINEAR
+        )
+        img = img.astype(np.float32) / 255.0
+        img = np.expand_dims(img, axis=-1)
+        return img
+
+    def get_dataset(self, path: Path) -> DatasetV2:
+
+        log.info(f"Loading dataset from: {path}")
+        list_labels = os.listdir(path)
+
+        list_images = []
+        try:
+            for label in list_labels:
+                label_dir = path / label
+                path_images = [
+                    label_dir / f for f in os.listdir(label_dir) if f.endswith(".jpg")
+                ]
+                list_images.extend(path_images)
+            images = list(map(self.get_image, list_images))
+            labels = list(map(self.get_label, list_images))
+            labels = list(map(self.one_hot_encode, labels))
+        except Exception as e:
+            log.exception(e)
+
+        dataset = tf.data.Dataset.from_tensor_slices((images, labels))
+        N = len(dataset)
+        dataset = dataset.shuffle(buffer_size=N + 1)
+
+        train_size = int(N * self.train_ratio)
+        test_size = int(N * self.test_ratio)
+        val_size = int(N * self.val_ratio)
+        train_ds = dataset.take(train_size)
+        test_ds = dataset.skip(train_size).take(test_size)
+        val_ds = dataset.skip(train_size + test_size).take(val_size)
+        print(f"Number of train samples: {len(train_ds)}")
+        print(f"Number of val samples: {len(val_ds)}")
+        print(f"Number of test samples: {len(test_ds)}")
+        return train_ds, test_ds, val_ds
+
+    def save(self, dataset: DatasetV2) -> None:
+        if os.path.exists(self.save_path):
+            shutil.rmtree(self.save_path)
+        dataset.save(self.save_path, compression="GZIP")

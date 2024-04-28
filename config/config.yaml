@@ -1,5 +1,6 @@
 data_ingestion:
-  url_download: https://www.kaggle.com/datasets/msambare/fer2013/download?datasetVersionNumber=1
+  url_download: https://www.kaggle.com/datasets/msambare/fer2013
+  destination: dataset/
 
 data_transformation:
   image_width: 32
@@ -9,4 +10,5 @@ data_transformation:
   train_ratio: 0.8
   val_ratio: 0.1
   test_ratio: 0.1
-  random_seed: 242
+  batch_size: 32
+  save_path: data_compressed/

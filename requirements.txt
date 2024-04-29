@@ -12,3 +12,4 @@ PyYAML
 notebook
 ipykernel
 loguru
+scikit-learn

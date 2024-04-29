@@ -11,11 +11,7 @@ from tensorflow import keras
 from pathlib import Path
 from typing import Tuple
 from tensorflow import DatasetV2
-
-config = src.read_yaml(Path("./config/config.yaml"))
-
-data_ingestion_config = config["data_ingestion"]
-data_transformation_config = config["data_transformation"]
+from src import logging as log
 
 
 class DataIngestion:
@@ -25,10 +21,11 @@ class DataIngestion:
         download: bool = False,
     ) -> None:
         self.url_download = config["url_download"]
-        self.data_path = config["destination"]
+        self.data_path = Path(config["data_path"])
         self.download = download
         return
 
+    @property
     def download_data(self):
         if self.download:
             log.info("Downloading data...")
@@ -48,7 +45,7 @@ class DataTransformation:
         self.test_ratio = (config["test_ratio"],)
         self.val_ratio = (config["val_ratio"],)
         self.batch_size = (config["batch_size"],)
-        self.save_path = config["save_path"]
+        self.save_path = Path(config["save_path"])
 
     def get_label(self, path: Path) -> str:
         return path.parent.name
@@ -105,12 +102,31 @@ class DataTransformation:
         train_ds = dataset.take(train_size)
         test_ds = dataset.skip(train_size).take(test_size)
         val_ds = dataset.skip(train_size + test_size).take(val_size)
-        print(f"Number of train samples: {len(train_ds)}")
-        print(f"Number of val samples: {len(val_ds)}")
-        print(f"Number of test samples: {len(test_ds)}")
+        log.info(f"Number of train samples: {len(train_ds)}")
+        log.info(f"Number of val samples: {len(val_ds)}")
+        log.info(f"Number of test samples: {len(test_ds)}")
         return train_ds, test_ds, val_ds
 
-    def save(self, dataset: DatasetV2) -> None:
+    def save(self, dataset: DatasetV2, path: str) -> None:
         if os.path.exists(self.save_path):
             shutil.rmtree(self.save_path)
-        dataset.save(self.save_path, compression="GZIP")
+        dataset.save(self.save_path / path, compression="GZIP")
+        log.info(f'Saved dataset to: "{self.save_path}"')
+
+
+class DataLoader:
+    def __init__(self, config):
+        self.load_path = config["load_path"]
+        self.batch_size = config["batch_size"]
+
+    def load(self, ds_name: str = "train"):
+        match ds_name.lower():
+            case "train":
+                ds = tf.data.Dataset.load(os.path.join(self.load_path, "train"))
+            case "test":
+                ds = tf.data.Dataset.load(os.path.join(self.load_path, "test"))
+            case "val":
+                ds = tf.data.Dataset.load(os.path.join(self.load_path, "val"))
+
+        ds = ds.batch(batch_size=self.batch_size).cache().prefetch(tf.data.AUTOTUNE)
+        return ds

@@ -10,7 +10,6 @@ import shutil
 from tensorflow import keras
 from pathlib import Path
 from typing import Tuple
-from tensorflow import DatasetV2
 from src import logging as log
 
 
@@ -29,8 +28,12 @@ class DataIngestion:
     def download_data(self):
         if self.download:
             log.info("Downloading data...")
-            od.download(self.url_download, self.dst_path)
+            od.download(self.url_download, self.data_path)
             self.download = False
+
+            shutil.copy(self.data_path / "fer2013" / "test", self.data_path)
+            shutil.copy(self.data_path / "fer2013" / "train", self.data_path)
+            shutil.rmtree(self.data_path / "fer2013")
 
 
 class DataTransformation:
@@ -40,11 +43,10 @@ class DataTransformation:
             config["image_width"],
             config["image_channels"],
         )
-        self.num_classes = (config["num_classes"],)
-        self.train_ratio = (config["train_ratio"],)
-        self.test_ratio = (config["test_ratio"],)
-        self.val_ratio = (config["val_ratio"],)
-        self.batch_size = (config["batch_size"],)
+        self.num_classes = config["num_classes"]
+        self.train_ratio = config["train_ratio"]
+        self.test_ratio = config["test_ratio"]
+        self.val_ratio = config["val_ratio"]
         self.save_path = Path(config["save_path"])
 
     def get_label(self, path: Path) -> str:
@@ -73,7 +75,7 @@ class DataTransformation:
         img = np.expand_dims(img, axis=-1)
         return img
 
-    def get_dataset(self, path: Path) -> DatasetV2:
+    def get_dataset(self, path: Path) -> tf.data.Dataset:
 
         log.info(f"Loading dataset from: {path}")
         list_labels = os.listdir(path)
@@ -107,10 +109,10 @@ class DataTransformation:
         log.info(f"Number of test samples: {len(test_ds)}")
         return train_ds, test_ds, val_ds
 
-    def save(self, dataset: DatasetV2, path: str) -> None:
+    def save(self, dataset: tf.data.Dataset, path: str) -> None:
         if os.path.exists(self.save_path):
             shutil.rmtree(self.save_path)
-        dataset.save(self.save_path / path, compression="GZIP")
+        dataset.save(str(self.save_path / path), compression="GZIP")
         log.info(f'Saved dataset to: "{self.save_path}"')
 
 

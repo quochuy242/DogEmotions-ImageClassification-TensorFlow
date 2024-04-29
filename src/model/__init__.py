@@ -9,11 +9,15 @@ from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
 params = read_yaml(Path("params.yaml"))
 
-data_augmentation = [
-    layers.RandomFlip("horizontal"),
-    layers.RandomRotation(0.1),
-    layers.RandomZoom(0.1),
-]
+data_augmentation = Sequential(
+    [
+        layers.RandomFlip("horizontal"),
+        layers.RandomRotation(0.1),
+        layers.RandomZoom(0.1),
+    ]
+)
+
+data_augmentation._name = "augmentation"
 
 early_stop = callbacks.EarlyStopping(
     monitor=params["early_stopping"]["monitor"],
@@ -32,6 +36,19 @@ reduce_lr = callbacks.ReduceLROnPlateau(
 )
 
 
+def evaluate(model, test_ds):
+    result = model.evaluate(test_ds)
+    logging.info(f"Evaluating {model._name} model: {result}")
+
+    y_pred = model.predict(test_ds)
+    y_pred = y_pred.argmax(axis=1)
+
+    y_true = test_ds.map(lambda x, y: y)
+    ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred)).plot()
+    plt.savefig(f"visualize/{model._name}/confusion_matrix.png")
+    return result
+
+
 class CNN:
     def __init__(self, params) -> None:
         self.input_shape = params["input_shape"]
@@ -47,7 +64,7 @@ class CNN:
 
     @property
     def build(self) -> Sequential:
-        model = Sequential(data_augmentation)
+        model = Sequential([layers.Input(self.input_shape), data_augmentation])
 
         for units in self.conv_units:
             model.add(layers.Conv2D(units, 3, activation=tf.nn.relu, padding="same"))
@@ -88,6 +105,7 @@ class CNN:
             show_layer_names=True,
         )
         self.model = model
+        return model
 
     def fit(self, train_ds, val_ds) -> callbacks.History:
         return self.model.fit(
@@ -113,17 +131,6 @@ class CNN:
             ],
         )
 
-    def evaluate(self, test_ds):
-        result = self.model.evaluate(test_ds)
-        logging.info(f"Evaluating {self.model._name} model: {result}")
-
-        y_pred = self.model.predict(test_ds)
-        y_pred = y_pred.argmax(axis=1)
-
-        y_true = test_ds.map(lambda x, y: y)
-        ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred)).plot()
-        plt.savefig(f"visualize/{self.model._name}/confusion_matrix.png")
-
 
 class MLP:
     def __init__(self, params) -> None:
@@ -139,7 +146,7 @@ class MLP:
 
     @property
     def build(self) -> Sequential:
-        model = Sequential(data_augmentation)
+        model = Sequential([layers.Input(self.input_shape), data_augmentation])
         for units in self.dense_units:
             model.add(layers.Dense(units, activation=tf.nn.relu))
         model.add(layers.Dropout(self.dropout_rate))
@@ -173,9 +180,10 @@ class MLP:
             show_layer_names=True,
         )
         self.model = model
+        return model
 
     def fit(self, train_ds, val_ds) -> callbacks.History:
-        return self.model.fit(
+        history = self.model.fit(
             train_ds,
             epochs=self.epochs,
             validation_data=val_ds,
@@ -197,18 +205,7 @@ class MLP:
                 callbacks.CSVLogger("logs/" + self.model._name + ".log"),
             ],
         )
-
-    def evaluate(self, test_ds):
-        result = self.model.evaluate(test_ds)
-        logging.info(f"Evaluating {self.model._name} model: {result}")
-
-        y_pred = self.model.predict(test_ds)
-        y_pred = y_pred.argmax(axis=1)
-
-        y_true = test_ds.map(lambda x, y: y)
-        ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred)).plot()
-        plt.savefig(f"visualize/{self.model._name}/confusion_matrix.png")
-        return result
+        return history
 
 
 class ViT:

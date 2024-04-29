@@ -26,6 +26,7 @@ class DataPipeline:
         self.transform = DataTransformation(config=transformation_config)
         self.loader = DataLoader(config=loader_config)
 
+    @property
     def run_pipeline(self):
         src.logging.info(f"Running data pipeline...")
         if self.download:
@@ -45,6 +46,7 @@ class DataPipeline:
 
 class ModelTrainingPipeline:
     def __init__(self, model: str = "CNN") -> None:
+        self.model = None
         match model.lower:
             case "cnn":
                 self.model = CNN(params=params["CNN"])
@@ -52,14 +54,16 @@ class ModelTrainingPipeline:
                 self.model = MLP(params=params["MLP"])
             case "vit":
                 self.model = ViT(params=params["ViT"])
-
+        if self.model == None:
+            self.model = CNN(params=params["CNN"])
         self.model.build
         self.train_ds, self.val_ds = None, None
         self.history = None
 
+    @property
     def run_pipeline(self):
         src.logging.info(f"Running model training pipeline...")
-        self.train_ds, _, self.val_ds = DataPipeline().run_pipeline()
+        self.train_ds, _, self.val_ds = DataPipeline().run_pipeline
         self.history = self.model.fit(self.train_ds, self.val_ds)
 
         for metric in self.history.history.keys():
@@ -82,14 +86,19 @@ class ModelTrainingPipeline:
         plt.ylabel("Value")
         plt.title(f"{self.model.model._name}: {metric}")
         plt.savefig(f"visualize/{self.model.model._name}/{metric}.png")
+        return self.history, self.model
 
 
 class ModelEvaluationPipeline:
-    def __init__(self, model: keras.Sequential) -> None:
-        self.model = model
+    def __init__(self, model: str = "CNN") -> None:
+        try:
+            self.model = keras.models.load_model(f"weights/{model.upper}/best.keras")
+        except Exception as e:
+            src.logging.exception(e)
 
+    @property
     def run_pipeline(self):
         src.logging.info(f"Running model evaluation pipeline...")
-        _, self.test_ds, _ = DataPipeline().run_pipeline()
-        result = self.model.evaluate(self.test_ds)
+        _, self.test_ds, _ = DataPipeline().run_pipeline
+        result = src.model.evaluate(self.model, self.test_ds)
         return result

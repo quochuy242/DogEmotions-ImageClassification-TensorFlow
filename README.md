@@ -7,9 +7,7 @@
  <code> pip install -r requirements.txt </code>
 
 ## Dataset
-Training: https://www.kaggle.com/datasets/devzohaib/dog-emotions-prediction
 
-Testing: https://www.kaggle.com/datasets/baigeixiaoli/dog-emotions
 
 ## References
 https://www.tensorflow.org/tutorials/keras/classification

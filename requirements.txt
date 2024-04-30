@@ -1,4 +1,5 @@
 pandas
+polar
 numpy
 tensorflow
 matplotlib
@@ -11,3 +12,4 @@ PyYAML
 notebook
 ipykernel
 loguru
+scikit-learn

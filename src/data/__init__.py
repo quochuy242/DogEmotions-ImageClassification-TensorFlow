@@ -1,16 +1,17 @@
 import tensorflow as tf
 import os
-import logging as log
 import src
 import opendatasets as od
 import cv2
 import numpy as np
 import shutil
+import zipfile
 
 from tensorflow import keras
 from pathlib import Path
 from typing import Tuple
-from src import logging as log
+
+import src.logging
 
 
 class DataIngestion:
@@ -27,13 +28,34 @@ class DataIngestion:
     @property
     def download_data(self):
         if self.download:
-            log.info("Downloading data...")
+            src.logging.info("Downloading data...")
+            if os.path.exists(self.data_path / "fer2013"):
+                shutil.rmtree(self.data_path / "fer2013")
             od.download(self.url_download, self.data_path)
             self.download = False
+            src.logging.info("Downloaded data!!")
 
-            shutil.copy(self.data_path / "fer2013" / "test", self.data_path)
-            shutil.copy(self.data_path / "fer2013" / "train", self.data_path)
-            shutil.rmtree(self.data_path / "fer2013")
+            # with zipfile.ZipFile(
+            #     self.data_path / "fer2013" / "fer2013.zip", "r"
+            # ) as zip_ref:
+            #     zip_ref.extractall(self.data_path / "fer2013")
+
+        if os.path.exists(self.data_path / "fer2013" / "test" / "disgust"):
+            shutil.rmtree(self.data_path / "fer2013" / "test" / "disgust")
+            shutil.rmtree(self.data_path / "fer2013" / "train" / "disgust")
+        if os.path.exists(self.data_path / "fer2013"):
+            shutil.copytree(
+                self.data_path / "fer2013" / "test",
+                self.data_path,
+                dirs_exist_ok=True,
+            )
+            shutil.copytree(
+                self.data_path / "fer2013" / "train",
+                self.data_path,
+                dirs_exist_ok=True,
+            )
+        shutil.rmtree(self.data_path / "fer2013")
+        src.logging.info("Prepared dataset!!")
 
 
 class DataTransformation:
@@ -77,7 +99,7 @@ class DataTransformation:
 
     def get_dataset(self, path: Path) -> tf.data.Dataset:
 
-        log.info(f"Loading dataset from: {path}")
+        src.logging.info(f"Loading dataset from: {path}")
         list_labels = os.listdir(path)
 
         list_images = []
@@ -92,7 +114,7 @@ class DataTransformation:
             labels = list(map(self.get_label, list_images))
             labels = list(map(self.one_hot_encode, labels))
         except Exception as e:
-            log.exception(e)
+            src.logging.exception(e)
 
         dataset = tf.data.Dataset.from_tensor_slices((images, labels))
         N = len(dataset)
@@ -104,16 +126,17 @@ class DataTransformation:
         train_ds = dataset.take(train_size)
         test_ds = dataset.skip(train_size).take(test_size)
         val_ds = dataset.skip(train_size + test_size).take(val_size)
-        log.info(f"Number of train samples: {len(train_ds)}")
-        log.info(f"Number of val samples: {len(val_ds)}")
-        log.info(f"Number of test samples: {len(test_ds)}")
+
+        src.logging.info(f"Number of train samples: {len(train_ds)}")
+        src.logging.info(f"Number of val samples: {len(val_ds)}")
+        src.logging.info(f"Number of test samples: {len(test_ds)}")
         return train_ds, test_ds, val_ds
 
     def save(self, dataset: tf.data.Dataset, path: str) -> None:
-        if os.path.exists(self.save_path):
-            shutil.rmtree(self.save_path)
+        if os.path.exists(self.save_path / path):
+            shutil.rmtree(self.save_path / path)
         dataset.save(str(self.save_path / path), compression="GZIP")
-        log.info(f'Saved dataset to: "{self.save_path}"')
+        src.logging.info(f'Saved dataset to: "{self.save_path}"')
 
 
 class DataLoader:

@@ -63,8 +63,10 @@ class CNN:
         self.model = None
 
     @property
-    def build(self) -> Sequential:
-        model = Sequential([layers.Input(self.input_shape), data_augmentation])
+    def build_model(self) -> Sequential:
+        model = Sequential(
+            [layers.Input(self.input_shape), data_augmentation], name="CNN"
+        )
 
         for units in self.conv_units:
             model.add(layers.Conv2D(units, 3, activation=tf.nn.relu, padding="same"))
@@ -107,7 +109,7 @@ class CNN:
         self.model = model
         return model
 
-    def fit(self, train_ds, val_ds) -> callbacks.History:
+    def fit_model(self, train_ds, val_ds) -> callbacks.History:
         return self.model.fit(
             train_ds,
             epochs=self.epochs,
@@ -123,7 +125,7 @@ class CNN:
                     verbose=0,
                 ),
                 callbacks.ModelCheckpoint(
-                    filepath=f"weights/{self.model._name}/last.h5",
+                    filepath=f"weights/{self.model._name}/last.keras",
                     monitor="val_loss",
                     verbose=0,
                 ),
@@ -145,8 +147,10 @@ class MLP:
         self.model = None
 
     @property
-    def build(self) -> Sequential:
-        model = Sequential([layers.Input(self.input_shape), data_augmentation])
+    def build_model(self) -> Sequential:
+        model = Sequential(
+            [layers.Input(self.input_shape), data_augmentation], name="MLP"
+        )
         for units in self.dense_units:
             model.add(layers.Dense(units, activation=tf.nn.relu))
         model.add(layers.Dropout(self.dropout_rate))
@@ -182,7 +186,7 @@ class MLP:
         self.model = model
         return model
 
-    def fit(self, train_ds, val_ds) -> callbacks.History:
+    def fit_model(self, train_ds, val_ds) -> callbacks.History:
         history = self.model.fit(
             train_ds,
             epochs=self.epochs,
@@ -198,7 +202,7 @@ class MLP:
                     verbose=0,
                 ),
                 callbacks.ModelCheckpoint(
-                    filepath=f"weights/{self.model._name}/last.h5",
+                    filepath=f"weights/{self.model._name}/last.keras",
                     monitor="val_loss",
                     verbose=0,
                 ),

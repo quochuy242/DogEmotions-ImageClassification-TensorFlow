@@ -1,13 +1,13 @@
 CNN:
   input_shape: [32, 32, 1]
   num_classes: 6
-  conv_units: [16, 32]
-  dense_units: [128, 6]
-  dropout_rate: 0.5
+  conv_units: [32, 64, 128, 512, 512]
+  dense_units: [256, 512, 6]
+  dropout_rate: 0.25
   learning_rate: 0.001
   l1: 0.004
   l2: 0.004
-  epochs: 1
+  epochs: 100
 
 MLP:
   input_shape: [32, 32, 1]

@@ -7,7 +7,7 @@ from pathlib import Path
 def main() -> None:
     try:
         src.pipeline.ModelTrainingPipeline(model="CNN").run_pipeline
-        src.pipeline.ModelEvaluationPipeline(model="CNN").run_pipeline
+        # src.pipeline.ModelEvaluationPipeline(model="CNN").run_pipeline
     except Exception as e:
         src.logging.exception(e)
     return None

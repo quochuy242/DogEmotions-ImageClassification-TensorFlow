@@ -88,8 +88,7 @@ class DataTransformation:
 
     def get_image(self, path: Path) -> np.ndarray[float]:
         img = cv2.imread(str(path))
-        if self.image_size[-1] == 1:
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = cv2.resize(
             img, dsize=self.image_size[:-1], interpolation=cv2.INTER_LINEAR
         )

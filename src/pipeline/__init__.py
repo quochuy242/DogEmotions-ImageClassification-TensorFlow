@@ -38,7 +38,7 @@ class DataPipeline:
             train, test, val = self.transform.get_dataset(path=self.ingestion.data_path)
             for ds, name in [(train, "train"), (test, "test"), (val, "val")]:
                 self.transform.save(dataset=ds, path=name)
-            src.logging.info(f"Saved dataset to: {self.ingestion.data_path}")
+            src.logging.info(f"Saved dataset to: {self.transform.save_path}")
         else:
             src.logging.info(f"Dataset already exists at: {self.transform.save_path}")
         train = self.loader.load(ds_name="train")

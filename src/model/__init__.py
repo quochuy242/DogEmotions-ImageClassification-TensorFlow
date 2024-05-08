@@ -77,8 +77,8 @@ class CNN:
         model.add(layers.Flatten())
         for units in self.dense_units:
             model.add(layers.Dense(units, activation=tf.nn.relu))
+            model.add(layers.Dropout(self.dropout_rate))
 
-        model.add(layers.Dropout(self.dropout_rate))
         model.add(
             layers.Dense(
                 self.num_classes,

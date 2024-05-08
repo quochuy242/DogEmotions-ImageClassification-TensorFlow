@@ -1,12 +1,13 @@
 import src
 import os
-import keras
 import tensorflow as tf
+import src.logging
 import matplotlib.pyplot as plt
+
 from pathlib import Path
 from src.data import DataLoader, DataTransformation, DataIngestion
-import src.logging
 from src.model import MLP, CNN, ViT
+from tensorflow import keras
 
 config = src.read_yaml(Path("./config/config.yaml"))
 ingestion_config = config["data_ingestion"]
@@ -44,9 +45,9 @@ class DataPipeline:
         test = self.loader.load(ds_name="test")
         val = self.loader.load(ds_name="val")
         src.logging.info(f'Loaded dataset from: "{self.loader.load_path}"')
-        src.logging.info(f"Number of train samples: {len(train)}")
-        src.logging.info(f"Number of val samples: {len(val)}")
-        src.logging.info(f"Number of test samples: {len(test)}")
+        src.logging.info(f"Number of batched train samples: {len(train)}")
+        src.logging.info(f"Number of batched val samples: {len(val)}")
+        src.logging.info(f"Number of batched test samples: {len(test)}")
         return train, test, val
 
 
@@ -62,26 +63,25 @@ class ModelTrainingPipeline:
 
         self.model.build_model
         self.train_ds, self.test_ds, self.val_ds = DataPipeline().run_pipeline
-        self.history = None
 
     @property
     def run_pipeline(self):
         src.logging.info(f"Running model training pipeline...")
 
-        self.history = self.model.fit_model(self.train_ds, self.val_ds)
+        history = self.model.fit_model(self.train_ds, self.val_ds)
 
-        for metric in self.history.history.keys():
+        for metric in history.history.keys():
             if "val" in metric:
                 plt.scatter(
-                    self.history.epoch,
-                    self.history.history[metric],
+                    history.epoch,
+                    history.history[metric],
                     label=metric,
                     color="orange",
                 )
             else:
                 plt.plot(
-                    self.history.epoch,
-                    self.history.history[metric],
+                    history.epoch,
+                    history.history[metric],
                     label=metric,
                     color="blue",
                 )
@@ -90,7 +90,7 @@ class ModelTrainingPipeline:
         plt.ylabel("Value")
         plt.title(f"{self.model.model._name}: {metric}")
         plt.savefig(f"visualize/{self.model.model._name}/{metric}.png")
-        return self.history, self.model
+        return history, self.model
 
 
 class ModelEvaluationPipeline:

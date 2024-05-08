@@ -70,7 +70,9 @@ class CNN:
 
         for units in self.conv_units:
             model.add(layers.Conv2D(units, 3, activation=tf.nn.relu, padding="same"))
+            model.add(layers.BatchNormalization())
             model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+            model.add(layers.BatchNormalization())
 
         model.add(layers.Flatten())
         for units in self.dense_units:
@@ -109,8 +111,8 @@ class CNN:
         self.model = model
         return model
 
-    def fit_model(self, train_ds, val_ds) -> callbacks.History:
-        return self.model.fit(
+    def fit_model(self, train_ds, val_ds):
+        history = self.model.fit(
             train_ds,
             epochs=self.epochs,
             validation_data=val_ds,
@@ -132,6 +134,7 @@ class CNN:
                 callbacks.CSVLogger("logs/" + self.model._name + ".log"),
             ],
         )
+        return history
 
 
 class MLP:

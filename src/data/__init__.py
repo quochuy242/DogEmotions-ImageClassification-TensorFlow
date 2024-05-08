@@ -44,18 +44,18 @@ class DataIngestion:
         if os.path.exists(self.data_path / "fer2013" / "test" / "disgust"):
             shutil.rmtree(self.data_path / "fer2013" / "test" / "disgust")
             shutil.rmtree(self.data_path / "fer2013" / "train" / "disgust")
-        if os.path.exists(self.data_path / "fer2013"):
-            shutil.copytree(
-                self.data_path / "fer2013" / "test",
-                self.data_path,
-                dirs_exist_ok=True,
-            )
-            shutil.copytree(
-                self.data_path / "fer2013" / "train",
-                self.data_path,
-                dirs_exist_ok=True,
-            )
-        shutil.rmtree(self.data_path / "fer2013")
+        # if os.path.exists(self.data_path / "fer2013"):
+        #     shutil.copytree(
+        #         self.data_path / "fer2013" / "test",
+        #         self.data_path,
+        #         dirs_exist_ok=True,
+        #     )
+        #     shutil.copytree(
+        #         self.data_path / "fer2013" / "train",
+        #         self.data_path,
+        #         dirs_exist_ok=True,
+        #     )
+        # shutil.rmtree(self.data_path / "fer2013")
         src.logging.info("Prepared dataset!!")
 
 
@@ -91,7 +91,7 @@ class DataTransformation:
         img = cv2.imread(str(path))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = cv2.resize(
-            img, dsize=self.image_size[:-1], interpolation=cv2.INTER_LINEAR
+            img, dsize=self.image_size[:-1]
         )
         img = img.astype(np.float32) / 255.0
         img = keras.utils.img_to_array(img)

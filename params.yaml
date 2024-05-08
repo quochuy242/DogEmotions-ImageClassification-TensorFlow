@@ -7,7 +7,7 @@ CNN:
   learning_rate: 0.001
   l1: 0.004
   l2: 0.004
-  epochs: 1000
+  epochs: 1
 
 MLP:
   input_shape: [32, 32, 1]
@@ -17,7 +17,7 @@ MLP:
   learning_rate: 0.001
   l1: 0.004
   l2: 0.004
-  epochs: 1000
+  epochs: 1
 
 ViT: 
   input_shape: [32, 32, 1]
@@ -27,7 +27,7 @@ ViT:
   learning_rate: 0.001
   l1: 0.004
   l2: 0.004
-  epochs: 1000
+  epochs: 1
 
 early_stopping:
   monitor: val_loss

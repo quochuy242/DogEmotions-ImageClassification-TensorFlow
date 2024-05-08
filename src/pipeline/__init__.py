@@ -5,6 +5,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from pathlib import Path
 from src.data import DataLoader, DataTransformation, DataIngestion
+import src.logging
 from src.model import MLP, CNN, ViT
 
 config = src.read_yaml(Path("./config/config.yaml"))
@@ -31,40 +32,43 @@ class DataPipeline:
         src.logging.info(f"Running data pipeline...")
         if self.download:
             self.ingestion.download_data
-            train, test, val = self.transform.get_dataset(path=self.ingestion.data_path)
-            [
-                self.transform.save(ds, path)
-                for ds, path in zip([train, test, val], ["train", "test", "val"])
-            ]
 
-        return (
-            self.loader.load(ds_name="train"),
-            self.loader.load(ds_name="test"),
-            self.loader.load(ds_name="val"),
-        )
+        if not os.path.exists(self.transform.save_path):
+            train, test, val = self.transform.get_dataset(path=self.ingestion.data_path)
+            for ds, name in [(train, "train"), (test, "test"), (val, "val")]:
+                self.transform.save(dataset=ds, path=name)
+            src.logging.info(f"Saved dataset to: {self.ingestion.data_path}")
+        else:
+            src.logging.info(f"Dataset already exists at: {self.transform.save_path}")
+        train = self.loader.load(ds_name="train")
+        test = self.loader.load(ds_name="test")
+        val = self.loader.load(ds_name="val")
+        src.logging.info(f'Loaded dataset from: "{self.loader.load_path}"')
+        src.logging.info(f"Number of train samples: {len(train)}")
+        src.logging.info(f"Number of val samples: {len(val)}")
+        src.logging.info(f"Number of test samples: {len(test)}")
+        return train, test, val
 
 
 class ModelTrainingPipeline:
     def __init__(self, model: str = "CNN") -> None:
-        self.model = None
-        match model.lower:
-            case "cnn":
+        match model.upper():
+            case "CNN":
                 self.model = CNN(params=params["CNN"])
-            case "mlp":
+            case "MLP":
                 self.model = MLP(params=params["MLP"])
-            case "vit":
+            case "VIT":
                 self.model = ViT(params=params["ViT"])
-        if self.model == None:
-            self.model = CNN(params=params["CNN"])
-        self.model.build
-        self.train_ds, self.val_ds = None, None
+
+        self.model.build_model
+        self.train_ds, self.test_ds, self.val_ds = DataPipeline().run_pipeline
         self.history = None
 
     @property
     def run_pipeline(self):
         src.logging.info(f"Running model training pipeline...")
-        self.train_ds, _, self.val_ds = DataPipeline().run_pipeline
-        self.history = self.model.fit(self.train_ds, self.val_ds)
+
+        self.history = self.model.fit_model(self.train_ds, self.val_ds)
 
         for metric in self.history.history.keys():
             if "val" in metric:

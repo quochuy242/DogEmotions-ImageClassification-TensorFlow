@@ -13,3 +13,4 @@ notebook
 ipykernel
 loguru
 scikit-learn
+opendatasets

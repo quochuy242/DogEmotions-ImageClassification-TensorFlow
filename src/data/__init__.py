@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import shutil
 import zipfile
+import pickle
 
 from tensorflow import keras
 from pathlib import Path
@@ -93,6 +94,7 @@ class DataTransformation:
             img, dsize=self.image_size[:-1], interpolation=cv2.INTER_LINEAR
         )
         img = img.astype(np.float32) / 255.0
+        img = keras.utils.img_to_array(img)
         img = np.expand_dims(img, axis=-1)
         return img
 
@@ -132,10 +134,16 @@ class DataTransformation:
         return train_ds, test_ds, val_ds
 
     def save(self, dataset: tf.data.Dataset, path: str) -> None:
-        if os.path.exists(self.save_path / path):
-            shutil.rmtree(self.save_path / path)
-        dataset.save(str(self.save_path / path), compression="GZIP")
-        src.logging.info(f'Saved dataset to: "{self.save_path}"')
+        # Create directory if not exists
+        save_dir = self.save_path / path
+        save_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Save dataset to TFRecord files
+        save_dir = str(save_dir)
+        dataset.save(save_dir, compression='GZIP')
+        with open(save_dir + '/element_spec', 'wb') as out_:
+            pickle.dump(dataset.element_spec, out_)
+        src.logging.info(f'Saved dataset to: "{save_dir}"')
 
 
 class DataLoader:
@@ -146,11 +154,14 @@ class DataLoader:
     def load(self, ds_name: str = "train"):
         match ds_name.lower():
             case "train":
-                ds = tf.data.Dataset.load(os.path.join(self.load_path, "train"))
+                ds_path = os.path.join(self.load_path, "train")
             case "test":
-                ds = tf.data.Dataset.load(os.path.join(self.load_path, "test"))
+                ds_path = os.path.join(self.load_path, "test")
             case "val":
-                ds = tf.data.Dataset.load(os.path.join(self.load_path, "val"))
-
+                    ds_path = os.path.join(self.load_path, "test")
+        
+        with open(ds_path + "/element_spec", "rb") as in_:
+            es = pickle.load(in_)
+        ds = tf.data.Dataset.load(ds_path, es, compression='GZIP')
         ds = ds.batch(batch_size=self.batch_size).cache().prefetch(tf.data.AUTOTUNE)
         return ds

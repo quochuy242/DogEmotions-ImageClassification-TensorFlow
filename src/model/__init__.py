@@ -69,23 +69,23 @@ class CNN:
         )
 
         for units in self.conv_units:
-            model.add(layers.Conv2D(units, 3, activation=tf.nn.relu, padding="same"))
+            model.add(layers.Conv2D(units, 3, activation='relu', padding="same"))
             model.add(layers.BatchNormalization())
             model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-            model.add(layers.BatchNormalization())
+            model.add(layers.Dropout(self.dropout_rate))
 
         model.add(layers.Flatten())
         for units in self.dense_units:
-            model.add(layers.Dense(units, activation=tf.nn.relu))
+            model.add(layers.Dense(units, activation='relu'))
             model.add(layers.Dropout(self.dropout_rate))
 
         model.add(
             layers.Dense(
                 self.num_classes,
-                activation=tf.nn.softmax,
+                activation='softmax',
                 name="output",
-                kernel_regularizer=tf.keras.regularizers.l1(0.004),
-                activity_regularizer=tf.keras.regularizers.l2(0.004),
+                # kernel_regularizer=tf.keras.regularizers.l1(self.l1),
+                # activity_regularizer=tf.keras.regularizers.l2(self.l2),
             ),
         )
         model.compile(
@@ -102,9 +102,10 @@ class CNN:
         model._name = "CNN"
         logging.info(f"{model._name} model summary: ")
         logging.info(model.summary())
+        os.makedirs(name=f'visualize/{model._name}', exist_ok=True)
         keras.utils.plot_model(
             model,
-            to_file=f"visualize/{model._name}.png",
+            to_file=f"visualize/{model._name}/layers_structure.png",
             show_shapes=True,
             show_layer_names=True,
         )
@@ -116,7 +117,6 @@ class CNN:
             train_ds,
             epochs=self.epochs,
             validation_data=val_ds,
-            verbose=self.epochs // 10,
             callbacks=[
                 early_stop,
                 reduce_lr,
@@ -194,7 +194,6 @@ class MLP:
             train_ds,
             epochs=self.epochs,
             validation_data=val_ds,
-            verbose=self.epochs // 10,
             callbacks=[
                 early_stop,
                 reduce_lr,

@@ -89,16 +89,14 @@ class ModelTrainingPipeline:
         plt.xlabel("Epoch")
         plt.ylabel("Value")
         plt.title(f"{self.model.model._name}: {metric}")
+        os.makedirs(name=f'visualize/{self.model.model._name}', exist_ok=True)
         plt.savefig(f"visualize/{self.model.model._name}/{metric}.png")
         return history, self.model
 
 
 class ModelEvaluationPipeline:
     def __init__(self, model: str = "CNN") -> None:
-        try:
-            self.model = keras.models.load_model(f"weights/{model.upper}/best.keras")
-        except Exception as e:
-            src.logging.exception(e)
+        self.model = keras.models.load_model(f"weights/{model.upper}/best.keras")
 
     @property
     def run_pipeline(self):

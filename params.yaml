@@ -2,22 +2,22 @@ CNN:
   input_shape: [32, 32, 1]
   num_classes: 6
   conv_units: [32, 64, 128, 512, 512]
-  dense_units: [256, 512, 6]
+  dense_units: [256, 512]
   dropout_rate: 0.25
   learning_rate: 0.001
   l1: 0.004
   l2: 0.004
-  epochs: 100
+
 
 MLP:
   input_shape: [32, 32, 1]
   num_classes: 6
-  dense_units: [128, 32, 6]
+  dense_units: [128, 32]
   dropout_rate: 0.5
   learning_rate: 0.001
   l1: 0.004
   l2: 0.004
-  epochs: 1
+
 
 ViT: 
   input_shape: [32, 32, 1]
@@ -27,7 +27,7 @@ ViT:
   learning_rate: 0.001
   l1: 0.004
   l2: 0.004
-  epochs: 1
+
 
 early_stopping:
   monitor: val_loss

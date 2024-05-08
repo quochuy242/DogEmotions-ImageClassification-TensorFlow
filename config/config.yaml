@@ -5,13 +5,7 @@ data_ingestion:
 data_transformation:
   image_width: 32
   image_height: 32 
-  image_channels: 1
-  num_classes: 6
-  train_ratio: 0.8
-  val_ratio: 0.1
-  test_ratio: 0.1
-  save_path: data_compressed/
-  
-data_loader:
-  load_path: data_compressed/
+  image_channels_expectation: 1
   batch_size: 32
+
+  

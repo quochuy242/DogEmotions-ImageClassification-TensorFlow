@@ -21,14 +21,26 @@ Furthermore, the entire application is containerized using **Docker**, ensuring 
 
 ## Getting Started
 
-To run this project locally, follow these steps:
+To run this project locally, follow these steps or paste all of them in Terminal:
 
-1. Clone the repository: `git clone https://github.com/quochuy242/Emotions-ImageClassification.git`
+```bash
+# 1. Clone the repository:
+git clone https://github.com/quochuy242/Emotions-ImageClassification.git
 
-2. Navigate to the project directory: `cd Emotions-ImageClassification`
-3. Build the Docker image: `docker build -t Emotions-ImageClassification .`
-4. Run the Docker container: `docker run -p 5000:5000 Emotions-ImageClassification`
-5. Access the web application at `http://localhost:5000`
+# 2. Navigate to the project directory: `
+cd Emotions-ImageClassification`
+
+# 3. Build the Docker image: 
+docker build -t Emotions-ImageClassification .
+
+# 4. Run the Docker container: 
+docker run -p 5000:5000 Emotions-ImageClassification
+```
+Access the web application at: 
+```bash 
+http://localhost:5000
+```
+
 
 ## Contributing
 

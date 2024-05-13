@@ -11,14 +11,14 @@ list_of_files = [
     f"src/data/__init__.py",
     f"src/logging/__init__.py",
     f"src/model/__init__.py",
-    f"config/config.yaml",
+    f"config.yaml",
     f"params.yaml",
-    "app.py",
-    "main.py",
-    "Dockerfile",
-    "requirements.txt",
-    "research/trials.ipynb",
-    "visualize/",
+    f"app.py",
+    f"main.py",
+    f"Dockerfile",
+    f"requirements.txt",
+    f"research/trials.ipynb",
+    f"visualize/",
 ]
 
 for filepath in list_of_files:

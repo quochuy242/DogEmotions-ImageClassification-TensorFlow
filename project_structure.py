@@ -19,6 +19,7 @@ list_of_files = [
     f"requirements.txt",
     f"research/trials.ipynb",
     f"visualize/",
+    f"templates/index.html",
 ]
 
 for filepath in list_of_files:

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emotion Detector</title>
+  <!-- Link Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Link Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Geist Sans', sans-serif;
+    }
+    #fileName {
+      text-align: right;
+      margin-left: auto;
+    }
+  </style>
+</head>
+
+<div class="min-h-screen bg-zinc-900 text-zinc-100 flex flex-col items-center justify-center p-4 font-GeistSans">
+  <div class="w-full max-w-md mb-4">
+      <img id="slideshow" class="w-full rounded-lg" alt="Slideshow Image" src="https://placehold.co/600x400?text=Image+1" crossorigin="anonymous">
+  </div>
+  <h1 class="text-3xl font-bold mb-4">Emotion Detector</h1>
+  <p class="mb-6 text-center">Upload an image to detect the emotion.</p>
+  <div class="bg-zinc-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+      <label for="modelSelect" class="block text-sm font-medium text-zinc-500 mb-2">Select Deep Learning Model:</label>
+      <select id="modelSelect" class="block w-full text-sm text-zinc-500 bg-zinc-700 p-2 rounded-lg mb-4">
+          <option value="">Select a model</option>
+          <option value="model1">Model 1</option>
+          <option value="model2">Model 2</option>
+          <option value="model3">Model 3</option>
+      </select>
+      <div id="modelDetails" class="hidden">
+          <h2 class="text-xl font-semibold mb-2">Model Details:</h2>
+          <p><strong>Number of Parameters:</strong> <span id="param1"></span></p>
+          <p><strong>F1 Score:</strong> <span id="param2"></span></p>
+          <p><strong>Accuracy:</strong> <span id="param3"></span></p>
+          <p><strong>Average Prediction Time:</strong> <span id="param4"></span></p>
+          <button id="toggleLayerButton" class="bg-blue-500 text-white p-2 rounded-lg mt-4">Show Layer Structure</button>
+          <div id="layerStructure" class="hidden mt-4">
+              <h3 class="text-lg font-semibold mb-2">Layer Structure:</h3>
+              <p id="layerDetails"></p>
+              <img id="layerImage" class="w-full rounded-lg mt-4" alt="Layer Structure">
+          </div>
+      </div>
+  </div>
+  <div class="bg-zinc-800 p-6 rounded-lg shadow-lg w-full max-w-md mt-6">
+      <input id="imageUpload" type="file" accept="image/*" class="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-4">
+      <button id="uploadButton" class="bg-blue-500 text-white p-2 rounded-lg w-full">Upload Image</button>
+      <div id="result" class="mt-6 hidden">
+          <h2 class="text-xl font-semibold mb-2">Detected Emotion:</h2>
+          <p id="emotion" class="text-lg mb-4"></p>
+          <img id="uploadedImage" class="w-full rounded-lg" alt="Uploaded Image" crossorigin="anonymous">
+      </div>
+  </div>
+  <footer class="mt-8 text-center">
+      <p class="text-sm">Created by Huy Truong</p>
+  </footer>
+</div>
+<script>
+document.getElementById('uploadButton').addEventListener('click', () => {
+  const fileInput = document.getElementById('imageUpload');
+  const resultDiv = document.getElementById('result');
+  const emotionText = document.getElementById('emotion');
+  const uploadedImage = document.getElementById('uploadedImage');
+
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      uploadedImage.src = e.target.result;
+      resultDiv.classList.remove('hidden');
+      // Simulate emotion detection
+      setTimeout(() => {
+        emotionText.textContent = 'Happy'; // Replace with actual model prediction
+      }, 1000);
+    };
+
+    reader.readAsDataURL(file);
+  } else {
+    alert('Please select an image to upload.');
+  }
+});
+
+// Slideshow functionality
+const slideshowImages = [
+  'https://placehold.co/600x400?text=Image+1',
+  'https://placehold.co/600x400?text=Image+2',
+  'https://placehold.co/600x400?text=Image+3'
+];
+let currentImageIndex = 0;
+const slideshowElement = document.getElementById('slideshow');
+
+setInterval(() => {
+  currentImageIndex = (currentImageIndex + 1) % slideshowImages.length;
+  slideshowElement.src = slideshowImages[currentImageIndex];
+}, 5000);
+
+// Model selection functionality
+const modelDetails = {
+  model1: { param1: '1M', param2: '0.85', param3: '0.90', param4: '200ms', layers: 'Input -> Conv2D -> MaxPool -> Dense -> Output' },
+  model2: { param1: '2M', param2: '0.88', param3: '0.92', param4: '150ms', layers: 'Input -> Conv2D -> Conv2D -> MaxPool -> Dense -> Output' },
+  model3: { param1: '3M', param2: '0.90', param3: '0.95', param4: '100ms', layers: 'Input -> Conv2D -> Conv2D -> Conv2D -> MaxPool -> Dense -> Output' }
+};
+
+document.getElementById('modelSelect').addEventListener('change', function() {
+  const selectedModel = this.value;
+  if (selectedModel) {
+    document.getElementById('modelDetails').classList.remove('hidden');
+    document.getElementById('param1').textContent = modelDetails[selectedModel].param1;
+    document.getElementById('param2').textContent = modelDetails[selectedModel].param2;
+    document.getElementById('param3').textContent = modelDetails[selectedModel].param3;
+    document.getElementById('param4').textContent = modelDetails[selectedModel].param4;
+    document.getElementById('layerDetails').textContent = modelDetails[selectedModel].layers;
+    document.getElementById('layerImage').src = `./visualize/${selectedModel}/layer_structure.png`;
+  } else {
+    document.getElementById('modelDetails').classList.add('hidden');
+  }
+});
+
+document.getElementById('toggleLayerButton').addEventListener('click', () => {
+  const layerStructureDiv = document.getElementById('layerStructure');
+  if (layerStructureDiv.classList.contains('hidden')) {
+    layerStructureDiv.classList.remove('hidden');
+    document.getElementById('toggleLayerButton').textContent = 'Hide Layer Structure';
+  } else {
+    layerStructureDiv.classList.add('hidden');
+    document.getElementById('toggleLayerButton').textContent = 'Show Layer Structure';
+  }
+});
+</script>
+</html>

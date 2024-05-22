@@ -1,46 +1,53 @@
-from isoduration import DurationFormattingException
+import tensorflow as tf
 import keras
 import os
 import warnings
 import cv2
 import numpy as np
 import time
+import src
 from pathlib import Path
 from tqdm import tqdm, trange
 
+osp = os.path
+def load_image_file(path, **kwargs):
+    try:
+        img = tf.keras.utils.load_img(path, **kwargs)
+    except Exception as e:
+        src.logging.exception(e)
+    arr = tf.keras.utils.img_to_array(img)
+    arr = arr / 255.0
 
-def load(filename: Path) -> np.ndarray:
-    img = cv2.imread(filename)
-    if img.ndim == 3:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    return img
+    if len(arr.shape) == 2:
+        arr = np.expand_dims(arr, axis=-1)
+    arr = np.array([arr])
+    return arr
 
 
-def preprocesing(img: np.ndarray) -> np.ndarray:
-    img = cv2.resize(img, dsize=(128, 128))
-    img = img / 255.0
-    img = np.expand_dims(img, axis=-1)
-    return img
+def load_image(path: str, **kwargs):
+    if osp.isfile(path):
+        return load_image_file(path, **kwargs)
+    elif osp.isdir(path):
+        arrs = []
+        file = os.listdir(path)
+        for f in file:
+            if f[-4:] not in [".jpg", ".png"]:
+                continue
+            else:
+                arr = load_image_file("path/f", **kwargs)
+                arrs.append(arr)
+
+        arrs = np.array([arrs])
+        return arrs
+    else:
+        src.logging.error(f"{path} is not a file or directory")
+        return None
 
 
 def main():
-
     # Load models from weights directory
     model = keras.models.load_model("weights/CNN/best.keras")
-
-    # Load images
-    print("Loading images...")
-    images = []
-    classes = os.listdir("dataset/test")
-    for classname in tqdm(classes):
-        filenames = os.listdir(f"dataset/test/{classname}")
-        for filename in tqdm(filenames):
-            if filename[-4:] not in [".jpg", ".png"]:
-                continue
-            path = f"dataset/test/{classname}/{filename}"
-            image = load(path)
-            image = preprocesing(image)
-            images.append(image)
+    images = load_image("images/test")
 
     # Predicting the images
     durations = []

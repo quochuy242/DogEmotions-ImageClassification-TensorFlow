@@ -21,7 +21,7 @@
 
 <div class="min-h-screen bg-zinc-900 text-zinc-100 flex flex-col items-center justify-center p-4 font-GeistSans">
   <div class="w-full max-w-md mb-4">
-      <img id="slideshow" class="w-full rounded-lg" alt="Slideshow Image" src="https://placehold.co/600x400?text=Image+1" crossorigin="anonymous">
+      <img id="slideshow" class="w-full rounded-lg" alt="Slideshow Image" src="static/image1.jpg" crossorigin="anonymous">
   </div>
   <h1 class="text-3xl font-bold mb-4">Emotion Detector</h1>
   <p class="mb-6 text-center">Upload an image to detect the emotion.</p>
@@ -29,9 +29,7 @@
       <label for="modelSelect" class="block text-sm font-medium text-zinc-500 mb-2">Select Deep Learning Model:</label>
       <select id="modelSelect" class="block w-full text-sm text-zinc-500 bg-zinc-700 p-2 rounded-lg mb-4">
           <option value="">Select a model</option>
-          <option value="model1">Model 1</option>
-          <option value="model2">Model 2</option>
-          <option value="model3">Model 3</option>
+          <option value="cnn">CNN</option>
       </select>
       <div id="modelDetails" class="hidden">
           <h2 class="text-xl font-semibold mb-2">Model Details:</h2>
@@ -88,9 +86,9 @@ document.getElementById('uploadButton').addEventListener('click', () => {
 
 // Slideshow functionality
 const slideshowImages = [
-  'https://placehold.co/600x400?text=Image+1',
-  'https://placehold.co/600x400?text=Image+2',
-  'https://placehold.co/600x400?text=Image+3'
+  'static/image1.jpg',
+  'static/image2.jpg',
+  'static/image3.jpg'
 ];
 let currentImageIndex = 0;
 const slideshowElement = document.getElementById('slideshow');
@@ -98,24 +96,22 @@ const slideshowElement = document.getElementById('slideshow');
 setInterval(() => {
   currentImageIndex = (currentImageIndex + 1) % slideshowImages.length;
   slideshowElement.src = slideshowImages[currentImageIndex];
-}, 5000);
+}, 500);
 
 // Model selection functionality
 const modelDetails = {
-  model1: { param1: '1M', param2: '0.85', param3: '0.90', param4: '200ms', layers: 'Input -> Conv2D -> MaxPool -> Dense -> Output' },
-  model2: { param1: '2M', param2: '0.88', param3: '0.92', param4: '150ms', layers: 'Input -> Conv2D -> Conv2D -> MaxPool -> Dense -> Output' },
-  model3: { param1: '3M', param2: '0.90', param3: '0.95', param4: '100ms', layers: 'Input -> Conv2D -> Conv2D -> Conv2D -> MaxPool -> Dense -> Output' }
+  cnn: { numParams: '1M', f1: '0.85', accuracy: '0.90', avgTime: '200ms'},
+
 };
 
 document.getElementById('modelSelect').addEventListener('change', function() {
   const selectedModel = this.value;
   if (selectedModel) {
     document.getElementById('modelDetails').classList.remove('hidden');
-    document.getElementById('param1').textContent = modelDetails[selectedModel].param1;
-    document.getElementById('param2').textContent = modelDetails[selectedModel].param2;
-    document.getElementById('param3').textContent = modelDetails[selectedModel].param3;
-    document.getElementById('param4').textContent = modelDetails[selectedModel].param4;
-    document.getElementById('layerDetails').textContent = modelDetails[selectedModel].layers;
+    document.getElementById('num_params').textContent = modelDetails[selectedModel].numParams;
+    document.getElementById('f1').textContent = modelDetails[selectedModel].f1;
+    document.getElementById('accuracy').textContent = modelDetails[selectedModel].accuracy;
+    document.getElementById('avg_time').textContent = modelDetails[selectedModel].avgTime;
     document.getElementById('layerImage').src = `./visualize/${selectedModel}/layer_structure.png`;
   } else {
     document.getElementById('modelDetails').classList.add('hidden');

@@ -20,9 +20,6 @@
 </head>
 
 <div class="min-h-screen bg-zinc-900 text-zinc-100 flex flex-col items-center justify-center p-4 font-GeistSans">
-  <div class="w-full max-w-md mb-4">
-      <img id="slideshow" class="w-full rounded-lg" alt="Slideshow Image" src="static/image1.jpg" crossorigin="anonymous">
-  </div>
   <h1 class="text-3xl font-bold mb-4">Emotion Detector</h1>
   <p class="mb-6 text-center">Upload an image to detect the emotion.</p>
   <div class="bg-zinc-800 p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -83,20 +80,6 @@ document.getElementById('uploadButton').addEventListener('click', () => {
     alert('Please select an image to upload.');
   }
 });
-
-// Slideshow functionality
-const slideshowImages = [
-  'static/image1.jpg',
-  'static/image2.jpg',
-  'static/image3.jpg'
-];
-let currentImageIndex = 0;
-const slideshowElement = document.getElementById('slideshow');
-
-setInterval(() => {
-  currentImageIndex = (currentImageIndex + 1) % slideshowImages.length;
-  slideshowElement.src = slideshowImages[currentImageIndex];
-}, 500);
 
 // Model selection functionality
 const modelDetails = {
